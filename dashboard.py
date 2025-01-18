@@ -237,7 +237,7 @@ with tab1:
     )
 with tab2:
     st.markdown("<h1 style='text-align: center; color: #4CAF50;'>AC-Wise Calls Monitoring</h1>", unsafe_allow_html=True)
-    mapping_df=pd.read_excel(r"C:\Users\prem2\Downloads\CT AC PC Mapping.xlsx")
+    mapping_df=pd.read_excel(r"CT AC PC Mapping.xlsx")
     new_df = pd.merge(df, mapping_df, on="ac_no", how="left")
     AC_wise = (
         new_df.groupby(['ac_no','AC_Name']).agg(
