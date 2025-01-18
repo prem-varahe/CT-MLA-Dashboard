@@ -633,6 +633,14 @@ with tab4:
     on='ac_no',
     how='right'
     )
+    merged_df.rename(
+    columns={
+        'Yes': 'Re-Elect MLA (Yes)',
+        'No': 'Re-Elect MLA (No)',
+        'Have not decided': 'Re-Elect MLA (HND)'
+    },
+    inplace=True
+    )
     # Optionally, round percentages to 2 decimal places
  # Round the values to 2 decimal places
     merged_df['Overall Rating']=merged_df['Development Rating']+merged_df['Frequency Rating']+merged_df['Accessibility Rating']
