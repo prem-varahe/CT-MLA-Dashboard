@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-
+st.set_page_config(layout="wide",initial_sidebar_state='collapsed')
 
 # Load your dataset
 @st.cache_data
@@ -16,55 +16,78 @@ def load_data():
     return df
 
 df = load_data()
-st.markdown("""
+st.markdown(
+    """
     <style>
+    /* Navbar styling */
     .stTabs [role="tablist"] {
-        background-color: #868B8E;  /* Navbar background color */
-        padding: 20px;
-        border-radius: 15px;
+        background-color: #213555; /* Background color of the navbar */
+        padding: 15px;
+        border-radius: 10px;
         position: sticky;
         top: 0;
         z-index: 9999;
-        padding: 15px 35px;
-        font-weight: bold;
     }
-    .stTabs .css-1d391kg {  /* Make tabs more engaging */
-        color: white;
-        font-size: 30px;
-        font-weight: bold;
-        text-align: center;
-        padding: 15px 30px
+    /* Individual tab styling */
+    .stTabs [role="tab"] {
+        font-size: 25px; /* Font size */
+        font-weight: bold; /* Bold text */
+        color: white; /* White font color */
+        margin: 0 40px; /* Spacing between tabs */
+        padding: 10px 20px; /* Padding inside tabs */
+        border-radius: 8px; /* Rounded edges */
     }
-    .stTabs .css-1d391kg:hover {  /* Hover effect */
-        background-color: #228B22;
-        border-radius: 15px;
+    /* Active tab styling */
+    .stTabs [role="tab"][aria-selected="true"] {
+        background-color: #3E5879; /* Highlight active tab */
+        color: white; /* Active tab font color */
+    }
+    /* Hover effect for tabs */
+    .stTabs [role="tab"]:hover {
+        background-color: #D8C4B6; /* Hover background color */
+        color: black; /* Hover font color */
         cursor: pointer;
     }
-    .stTabs .css-1d391kg[aria-selected="true"] {  /* Active tab */
-        background-color: #228B22;
-        color: white;
-    }
     </style>
-""", unsafe_allow_html=True)
-
-# Create the tabs with Streamlit
+    """,
+    unsafe_allow_html=True,
+)
 tab1, tab2, tab3, tab4, tab5 = st.tabs(
     ["Calls & Agent Monitoring", 
      "AC-Wise Calls Monitoring", 
      "Performance of MLA", 
-     "State Executive Report", 
+     "AC-Wise Summary Report", 
      "Graph View"]
 )
 # Title
 with tab1:
-    st.markdown("<h1 style='text-align: center; color: #4CAF50;'>Calls & Agent Monitoring Dashboard</h1>", unsafe_allow_html=True)
-    # Sidebar for filters with enhanced styling
-    st.write("### Select Dates:")
-    selected_dates = st.multiselect(
-    "Choose Dates:",
-    options=df["sync_date"].unique(),
-    help="Filter the data based on selected dates")
-    filtered_df = df[df['sync_date'].isin(selected_dates)]
+    st.markdown("<h2 style='text-align: center;'>Select Start & End Date: </h2>", unsafe_allow_html=True)
+    col1, col2 = st.columns([4, 4])  # Two equal columns
+    # PC Name selection in the first column
+    with col1:
+        selected_dates1 = st.multiselect(
+        "Start Date:",
+        options=df["sync_date"].unique(),
+        help="Select a start date to filter the data"
+        )
+
+    with col2:
+        selected_dates2 = st.multiselect(
+        "End Date:",
+        options=df["sync_date"].unique(),
+        help="Select an end date to filter the data"
+        )
+
+# Filter the DataFrame based on the selected start and end dates
+    filtered_df = df
+
+# Apply filtering based on selected start date
+    if selected_dates1:
+        filtered_df = filtered_df[filtered_df['sync_date'] >= min(selected_dates1)]
+
+# Apply filtering based on selected end date
+    if selected_dates2:
+        filtered_df = filtered_df[filtered_df['sync_date'] <= max(selected_dates2)]
     # Metrics calculation
     total_agents = filtered_df["agentId"].nunique()
     total_calls_made = filtered_df["callRemark"].notnull().sum()
@@ -75,41 +98,52 @@ with tab1:
     # Center-aligned metrics display
     st.markdown("<h2 style='text-align: center;'>Key Metrics</h2>", unsafe_allow_html=True)
 
-    # Custom CSS for borders, styling, and uniform box dimensions, with space between columns
+    # Custom CSS for borders, styling, and uniform box dimensions, with space between columns 
     st.markdown("""
-                <style>
-                .metric-column {
-                border: 2px solid #4CAF50; /* Green border */
-                border-radius: 8px; /* Rounded corners */
-                padding: 10px;
-                text-align: center;
-                background-color: #f1f1f1; /* Light grey background */
-                margin: 10px;
-                min-width: 150px; /* Minimum width */
-                height: 120px; /* Set fixed height */
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                }
-                .metric-value {
-                font-size: 24px;
-                color: #4CAF50; /* Green text color */
-                font-weight: bold; /* Bold number */
-                }
-                .metric-label {
-                font-size: 14px;
-                color: #555555; /* Dark grey text color */
-                }
-                .dataframe tbody td {
-            height: 100px;  /* Adjust row height */
-                }
-                .col-wrapper {
-                display: flex;
-                justify-content: space-between; /* Space between columns */
-                align-items: center;
-                }
-                </style>""", unsafe_allow_html=True)
+    <style>
+    .metric-column {
+        border: 2px solid #3E5879; /* Darker border color */
+        border-radius: 8px; /* Rounded corners */
+        padding: 10px;
+        text-align: center;
+        background-color: #D8C4B6; /* Updated box body color */
+        margin: 10px;
+        min-width: 150px; /* Minimum width */
+        height: 120px; /* Set fixed height */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .metric-value {
+        font-size: 24px;
+        color: #3E5879; /* Darker text color for values */
+        font-weight: bold; /* Bold number */
+    }
+    .metric-label {
+        font-size: 14px;
+        color: #3E5879; /* Darker text color for labels */
+    }
+    .dataframe thead th {
+        background-color: #3E5879; /* Header background color */
+        color: #FFFFFF; /* Header text color */
+    }
+    .dataframe tbody tr:nth-child(even) td {
+        background-color: #FFFFFF; /* White for even rows */
+        color: #3E5879; /* Text color for even rows */
+    }
+    .dataframe tbody tr:nth-child(odd) td {
+        background-color: #D8C4B6; /* Beige for odd rows */
+        color: #3E5879; /* Text color for odd rows */
+    }
+    .col-wrapper {
+        display: flex;
+        justify-content: space-between; /* Space between columns */
+        align-items: center;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 
     # Create a container with space between the columns
     col1, col2, col3, col4, col5 = st.columns([6,6,6,6,6],gap='small')
@@ -181,19 +215,27 @@ with tab1:
     def style_table(df):
         return df.style.set_properties(**{
         'text-align': 'center',  # Center-align all text
-        'border': '3px solid black',  # Add border
+        'border': '3px solid #3E5879',  # Border color matches the dark color
         'padding': '10px'  # Add padding for readability
         }).set_table_styles([{
             'selector': 'th',
-            'props': [('background-color', '#ff7456'),  # Header background color
-                  ('color', 'white'),  # Header text color
-                  ('font-weight', 'bold'),  # Bold header text
-                  ('text-align', 'center')]  # Center-align header text
-                  }])
-
+            'props': [
+            ('background-color', '#3E5879'),  # Header background color
+            ('color', '#FFFFFF'),  # Header text color
+            ('font-weight', 'bold'),  # Bold header text
+            ('text-align', 'center')  # Center-align header text
+            ]
+            }, {
+                'selector': 'td',
+                'props': [
+                    ('background-color', '#D8C4B6'),  # Table body background color
+                    ('color', '#3E5879'),  # Text color for table body
+                    ('border', '1px solid #3E5879')  # Border color for table cells
+                    ]
+                    }])
     st.markdown("<h2 style='text-align: center;'>Date-Wise Call Monitoring</h2>", unsafe_allow_html=True)
     st.markdown(f'<div class="dataframe">{pivot_df.to_html(index=False)}</div>',unsafe_allow_html=True)
-
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
     # Download options
     csv1 = pivot_df.to_csv(index=False).encode("utf-8")
     st.download_button(
@@ -226,7 +268,7 @@ with tab1:
     with st.container():
         st.markdown("<h2 style='text-align: center;'>Agent-Wise Call Monitoring</h2>", unsafe_allow_html=True)
         st.markdown(f'<div class="dataframe">{pivot_df2.to_html(index=False)}</div>',unsafe_allow_html=True)
-
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
     # Download options
     csv2 = pivot_df2.to_csv(index=False).encode("utf-8")
     st.download_button(
@@ -236,7 +278,6 @@ with tab1:
     mime="text/csv",
     )
 with tab2:
-    st.markdown("<h1 style='text-align: center; color: #4CAF50;'>AC-Wise Calls Monitoring</h1>", unsafe_allow_html=True)
     mapping_df=pd.read_excel("CT AC PC Mapping.xlsx")
     new_df = pd.merge(df, mapping_df, on="ac_no", how="left")
     AC_wise = (
@@ -258,9 +299,11 @@ with tab2:
         },
         inplace=True
         )
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
     st.markdown(f'<div class="dataframe">{AC_wise.to_html(index=False)}</div>',unsafe_allow_html=True)
 
     # Download options
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
     ac_csv = AC_wise.to_csv(index=False).encode("utf-8")
     st.download_button(
     label="Download AC-Wise Data",
@@ -269,7 +312,6 @@ with tab2:
     mime="text/csv",
     )
 with tab3:
-    st.markdown("<h1 style='text-align: center; color: #4CAF50;'>Performance Matrics & Insights for MLAs</h1>", unsafe_allow_html=True)
     col1, col2 = st.columns([4, 4])  # Two equal columns
 
     # PC Name selection in the first column
@@ -302,51 +344,64 @@ with tab3:
 
     # Custom CSS for borders, styling, and uniform box dimensions, with space between columns
     st.markdown("""
-                <style>
-                .metric-column {
-                border: 2px solid #4CAF50; /* Green border */
-                border-radius: 8px; /* Rounded corners */
-                padding: 15px;
-                text-align: center;
-                background-color: #f1f1f1; /* Light grey background */
-                margin: 10px;
-                min-width: 100px; /* Minimum width */
-                height: 120px; /* Set fixed height */
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                }
-                .metric-value {
-                font-size: 24px;
-                color: #4CAF50; /* Green text color */
-                font-weight: bold; /* Bold number */
-                }
-                .metric-label {
-                font-size: 14px;
-                color: #555555; /* Dark grey text color */
-                }
-                .col-wrapper {
-                display: flex;
-                justify-content: space-between; /* Space between columns */
-                align-items: center;
-                }
-                </style>""", unsafe_allow_html=True)
+    <style>
+    .metric-column {
+        border: 2px solid #3E5879; /* Dark border */
+        border-radius: 8px; /* Rounded corners */
+        padding: 15px;
+        text-align: center;
+        background-color: #D8C4B6; /* Light beige background */
+        margin: 10px;
+        min-width: 100px; /* Minimum width */
+        height: 120px; /* Set fixed height */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    table {
+        width: 100%; 
+        border-collapse: collapse; 
+    }
+    th, td {
+        padding: 10px; 
+        text-align: center; 
+        font-size: 14px; 
+        border: 1px solid #3E5879; 
+    }
+    th {
+        background-color: #3E5879; 
+        color: white; 
+        font-weight: bold;
+    }
+    tr:nth-child(even) {
+        background-color: #ffffff; /* White for even rows */
+    }
+    tr:nth-child(odd) {
+        background-color: #D8C4B6; /* Light beige for odd rows */
+    }
+    tr:hover {
+        background-color: #C4B8A6; /* Hover effect */
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
     st.markdown("""
     <style>
     .dataframe {
-        border: 2px solid #4CAF50; /* Green border around the table */
+        border: 2px solid #3E5879; /* Dark border around the table */
         border-radius: 8px; /* Rounded corners */
-        max-width: 100%;;
+        max-width: 100%;
         overflow-x: auto;
         overflow-y: auto;
-        background-color: #f9f9f9; /* Light grey background for table */
+        background-color: #D8C4B6; /* Light beige background for table */
         box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
         margin: 10px 0;
     }
     
     .dataframe th {
-        background-color: #4CAF50; /* Green header background */
+        background-color: #3E5879; /* Dark header background */
         color: white; /* White text for headers */
         font-size: 16px;
         padding: 10px;
@@ -358,22 +413,23 @@ with tab3:
         text-align: center; /* Center-align cell text */
         padding: 10px;
         font-size: 18px;
-        color: #555555; /* Dark grey text for rows */
+        color: #3E5879; /* Dark text for rows */
     }
     
     .dataframe tr:nth-child(even) {
-        background-color: #f1f1f1; /* Light grey for even rows */
+        background-color: #f2e9e4; /* Slightly lighter beige for even rows */
     }
     
     .dataframe tr:nth-child(odd) {
-        background-color: #ffffff; /* White for odd rows */
+        background-color: #D8C4B6; /* Light beige for odd rows */
     }
     
     .dataframe tr:hover {
-        background-color: #f0f8ff; /* Light blue hover effect */
+        background-color: #C4B8A6; /* Slightly darker beige hover effect */
     }
     </style>
 """, unsafe_allow_html=True)
+
     # Create a container with space between the columns
     col1, col2, col3= st.columns([6,6,6],gap='small')
 
@@ -419,6 +475,7 @@ with tab3:
         R_df = R_df.sort_values(by='Sample', ascending=False).reset_index(drop=True)
     st.markdown("<h2 style='text-align: center;'>Re-Electing MLAs</h2>", unsafe_allow_html=True)
     st.markdown(f'<div class="dataframe">{R_df.to_html(index=False)}</div>', unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 
     # Download options
     R_csv = R_df.to_csv(index=False).encode("utf-8")
@@ -446,6 +503,8 @@ with tab3:
             )
     st.markdown("<h2 style='text-align: center;'>Frquency Visits MLAs vs Re-Elect MLAs</h2>", unsafe_allow_html=True)
     st.markdown(f'<div class="dataframe">{F_df_percentage.to_html(index=True)}</div>',unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+
     F_csv = F_df_percentage.to_csv(index=False).encode("utf-8")
     st.download_button(
     label="Download Visits MLAs vs Re-Elect MLAs",
@@ -472,6 +531,7 @@ with tab3:
             )
     st.markdown("<h2 style='text-align: center;'>Development Rating MLAs vs Re-Elect MLAs</h2>", unsafe_allow_html=True)
     st.markdown(f'<div class="dataframe">{D_df_percentage.to_html(index=True)}</div>',unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
     D_csv = D_df_percentage.to_csv(index=False).encode("utf-8")
     st.download_button(
     label="Download Rating MLAs vs Re-Elect MLAs",
@@ -499,6 +559,7 @@ with tab3:
             )
     st.markdown("<h2 style='text-align: center;'>Accessibility of MLAs vs Re-Elect MLAs</h2>", unsafe_allow_html=True)
     st.markdown(f'<div class="dataframe">{A_df_percentage.to_html(index=True)}</div>',unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
     A_csv = A_df_percentage.to_csv(index=False).encode("utf-8")
     st.download_button(
     label="Download Accessibility MLAs vs Re-Elect MLAs",
@@ -521,6 +582,7 @@ with tab3:
     party_df_percentage = party_df_percentage.round(2).astype(str) + '%'
     st.markdown("<h2 style='text-align: center;'>Past AE Preference vs Re-Elect MLAs</h2>", unsafe_allow_html=True)
     st.markdown(f'<div class="dataframe">{party_df_percentage.to_html(index=True)}</div>',unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
     p_csv = party_df_percentage.to_csv(index=False).encode("utf-8")
     st.download_button(
     label="Download Past AE Pref vs Re-Elect MLAs",
@@ -540,6 +602,7 @@ with tab3:
     p_df = p_df.sort_values(by='uid_count', ascending=False).reset_index(drop=True)
     st.markdown("<h2 style='text-align: center;'>Past AE Preference</h2>", unsafe_allow_html=True)
     st.markdown(f'<div class="dataframe">{p_df.to_html(index=False)}</div>',unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
     p2_csv = p_df.to_csv(index=False).encode("utf-8")
     st.download_button(
     label="Past AE Preference",
@@ -548,7 +611,6 @@ with tab3:
     mime="text/csv",
     )
 with tab4:
-    st.markdown("<h1 style='text-align: center; color: #4CAF50;'>State Executive Summary Report</h1>", unsafe_allow_html=True)
     Overall_df = (
         new_df.groupby(['PC_Name','district','ac_no','AC_Name']).agg(
         Valid_Counts=('final_rejection', lambda x: (x == True).sum())  # Count where final rejection is True
@@ -623,6 +685,7 @@ with tab4:
     fill_value=0  # Fill missing values with 0
     ).reset_index()
     Ov_df_percentage = Ov_df.set_index('ac_no').div(Ov_df.set_index('ac_no').sum(axis=1), axis=0) * 100
+    Ov_df_percentage = Ov_df_percentage.applymap(lambda x: f"{x:.2f}%")
     Ov_df_percentage = Ov_df_percentage.reset_index()  # Reset the index
     Ov_df_percentage = Ov_df_percentage.round(2)  # Round to 2 decimal places
     
@@ -633,19 +696,22 @@ with tab4:
     on='ac_no',
     how='right'
     )
-    merged_df.rename(
-    columns={
-        'Yes': 'Re-Elect MLA (Yes)',
-        'No': 'Re-Elect MLA (No)',
-        'Have not decided': 'Re-Elect MLA (HND)'
-    },
-    inplace=True
-    )
+
     # Optionally, round percentages to 2 decimal places
  # Round the values to 2 decimal places
     merged_df['Overall Rating']=merged_df['Development Rating']+merged_df['Frequency Rating']+merged_df['Accessibility Rating']
     merged_df['Overall Rating %']=(merged_df['Development Rating %'].str.rstrip('%').astype(float)+merged_df['Frequency Rating %'].str.rstrip('%').astype(float)+merged_df['Accessibility Rating %'].str.rstrip('%').astype(float))/3
     merged_df = merged_df.sort_values(by='ac_no', ascending=True).reset_index(drop=True)
+    merged_df = merged_df.rename(columns={
+    "PC_Name":"PC Name",
+    "district":"District",
+    "ac_no":"AC No",
+    "AC_Name":"AC Name",
+    "Valid_Counts":"Valid Sample",
+    "Yes": "Re-Elect MLA (Yes)",
+    "No": "Re-Elect MLA (No)",
+    "Have not decided": "Re-Elect MLA (HND)"
+    })
 # Add a new column for performance category
     def categorize(row):
         if row['Overall Rating %'] < 50:
@@ -674,12 +740,12 @@ with tab4:
     st.markdown("""
     <style>
     .dataframe-container {
-        width: 105%; /* Adjusted width to shrink table */
+        width: 100%; /* Ensure the table fits within the container */
         margin: 0 auto; /* Center the table */
         overflow-x: auto; /* Enable horizontal scrolling if needed */
-        border: 1px solid #4CAF50; /* Green border around the table */
-        border-radius: 5px; /* Slightly rounded corners */
-        background-color: #f9f9f9; /* Light grey background */
+        border: 1px solid #3E5879; /* Dark border around the table */
+        border-radius: 8px; /* Rounded corners */
+        background-color: #D8C4B6; /* Light beige background for the container */
     }
 
     table.dataframe {
@@ -688,32 +754,33 @@ with tab4:
     }
 
     th, td {
-        padding: 5px; /* Decreased padding for less spacing */
-        text-align: center; /* Center align text */
-        font-size: 12px; /* Smaller font size */
-        border: 1px solid #ddd; /* Light grey cell borders */
+        padding: 10px; /* Adjust padding for better readability */
+        text-align: center; /* Center-align text */
+        font-size: 14px; /* Set font size */
+        border: 1px solid #3E5879; /* Border color matching the theme */
     }
 
     th {
-        background-color: #4CAF50; /* Green header */
+        background-color: #3E5879; /* Dark header background */
         color: white; /* White text for headers */
         font-weight: bold; /* Bold font for headers */
         text-align: center;
     }
 
     tr:nth-child(even) {
-        background-color: #f1f1f1; /* Light grey for even rows */
+        background-color: #ffffff; /* White for even rows */
     }
 
     tr:nth-child(odd) {
-        background-color: #ffffff; /* White for odd rows */
+        background-color: #D8C4B6; /* Light beige for odd rows */
     }
 
     tr:hover {
-        background-color: #f0f8ff; /* Light blue hover effect */
+        background-color: #C4B8A6; /* Slightly darker beige hover effect */
     }
     </style>
     """, unsafe_allow_html=True)
+
 
     styled_df=merged_df.style.applymap(
         highlight_performance, subset=['Performance']  # Apply formatting to 'Performance' column only
@@ -721,12 +788,6 @@ with tab4:
         {'Overall Rating %': '{:.2f}%'}  # Format 'Overall Rating %' column as percentage
         )
     html_table = styled_df.to_html(index=False)
-    # st.markdown(f'<div class="dataframe">{styled_df.to_html(index=False)}</div>',unsafe_allow_html=True)
-    # st.markdown(f"""
-    #             <div class="dataframe-container">
-    #             {styled_df.to_html(index=False)}
-    #             </div>
-    #             """, unsafe_allow_html=True)
     st.markdown(f'<div class="dataframe-container">{html_table}</div>',unsafe_allow_html=True)
 
     # Download options
@@ -739,7 +800,6 @@ with tab4:
     mime="text/csv",
     )
 with tab5:
-    st.markdown("<h2 style='text-align: center;'>Graph/Plot View</h2>", unsafe_allow_html=True)
     col1, col2,col3 = st.columns([4, 4, 4])  # Two equal columns
     # Date selection in the first column
     with col1:
