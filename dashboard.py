@@ -203,9 +203,9 @@ with tab1:
         mime="text/csv",
         )
     # Agent-wise pivot
-    df['agent_name'] = df['agentId'].apply(lambda x: x.split('-')[0])
+    filtered_df['agent_name'] = filtered_df['agentId'].apply(lambda x: x.split('-')[0])
     pivot_df2 = (
-        df.groupby('agent_name').agg(
+        filtered_df.groupby('agent_name').agg(
         callremark_exists_count=('callRemark', lambda x: x.notnull().sum()),  # Count where callremark exists
         callremark_connected_count=('callRemark', lambda x: (x == 'Connected').sum()),  # Count where callremark is 'Connected'
         final_rejection_true_count=('v1_rejection', lambda x: (x == True).sum())  # Count where final rejection is True
