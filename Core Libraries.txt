@@ -1,9 +1,0 @@
-Core Libraries
-These are essential for the functionality of your dashboard:
-
-
-streamlit  # Core library for creating the dashboard
-pandas      # For data manipulation
-plotly.graph_objects      # For creating interactive visualizations
-numpy      # Used with pandas for numerical operations
-python-dateutil # For working with date and time parsing
