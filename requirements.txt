@@ -5,3 +5,8 @@ numpy
 python-dateutil
 pymongo
 openpyxl
+babel
+datetime
+decimal
+os
+dotenv
