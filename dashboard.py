@@ -6,15 +6,13 @@ from datetime import datetime
 from babel.numbers import format_decimal
 from decimal import Decimal, InvalidOperation
 from streamlit_option_menu import option_menu
-import os
-from dotenv import load_dotenv
 st.set_page_config(layout="wide",initial_sidebar_state='collapsed')
 
 # Load environment variables from .env file
-load_dotenv()
+
 
 # Get the MongoDB URI
-mongo_uri = os.getenv("MONGO_URL")
+
 # Load your dataset
 @st.cache_data
 def load_data():
