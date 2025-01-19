@@ -7,6 +7,5 @@ pymongo
 openpyxl
 babel
 datetime
-decimal
 os
 dotenv
