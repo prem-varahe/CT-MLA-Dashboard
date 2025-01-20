@@ -9,3 +9,5 @@ babel
 python-dotenv
 streamlit-option-menu
 click
+os
+dotenv
