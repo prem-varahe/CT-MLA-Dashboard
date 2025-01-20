@@ -6,19 +6,23 @@ from datetime import datetime
 from babel.numbers import format_decimal
 from decimal import Decimal, InvalidOperation
 from streamlit_option_menu import option_menu
+import os
+from dotenv import load_dotenv
 st.set_page_config(layout="wide",initial_sidebar_state='collapsed')
 
 # Load environment variables from .env file
+load_dotenv()
 
 
-# Get the MongoDB URI
+mongo_uri = os.getenv("MONGO_URL")
+
 
 # Load your dataset
 @st.cache_data
 def load_data():
     # Replace this with your actual data loading code
     from pymongo import MongoClient
-    mongo_client = MongoClient("mongodb+srv://prem_prakash_kamakhya:19USyy4gnAIOuT2G@cati.hoamu.mongodb.net/")
+    mongo_client = MongoClient(mongo_uri)
     host_info = mongo_client['HOST']
     print ("\nhost:", host_info)
     df = pd.DataFrame(mongo_client['cati_central']['CT_MLA_feedback_raw_response'].find({'callRemark': {'$exists': True},'sync_date':{'$ne':"NaT"}}))
