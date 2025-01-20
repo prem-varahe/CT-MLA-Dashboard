@@ -5,9 +5,13 @@ import plotly.graph_objects as go
 from datetime import datetime
 from babel.numbers import format_decimal
 from decimal import Decimal, InvalidOperation
+import tomli
 from streamlit_option_menu import option_menu
-import os
-from dotenv import load_dotenv
+with open("config.toml", "rb") as f:
+    config = tomli.load(f)
+
+# Access the MongoDB URI
+mongo_uri = config["mongo"]["uri"]
 st.set_page_config(layout="wide",initial_sidebar_state='collapsed')
 # Load your dataset
 @st.cache_data
