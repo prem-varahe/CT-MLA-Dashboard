@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime
+from babel.numbers import format_decimal
+from decimal import Decimal, InvalidOperation
+from streamlit_option_menu import option_menu
 import os
 from dotenv import load_dotenv
 st.set_page_config(layout="wide",initial_sidebar_state='collapsed')
@@ -103,14 +106,104 @@ if authenticate_user():
     
             filtered_df = df[(df['sync_date'] >= pd.to_datetime(start_date)) & (df['sync_date'] <= pd.to_datetime(end_date))]
 
+            # Filter the DataFrame based on the selected start and end dates
+            total_days = (end_date - start_date).days + 1
             total_agents = filtered_df["agentId"].nunique()
             total_calls_made = filtered_df["callRemark"].notnull().sum()
             connected_calls = (filtered_df["callRemark"] == "Connected").sum()
             valid_calls = (filtered_df["final_rejection"] == True).sum()
             average_calls_per_agent = total_calls_made / total_agents if total_agents > 0 else 0
+            average_valid_calls_per_agent = valid_calls / total_agents if total_agents > 0 else 0
             
+            # Correct calculation for Avg. Agents per Day (average number of unique agents per day)
+            daily_agents_count = filtered_df.groupby(filtered_df['sync_date'].dt.date)['agentId'].nunique()
+            avg_agents_per_day = daily_agents_count.mean() if len(daily_agents_count) > 0 else 0
+            
+            avg_calls_per_day = total_calls_made / total_days if total_days > 0 else 0
+            avg_connected_calls_per_day = connected_calls / total_days if total_days > 0 else 0
+            avg_valid_calls_per_day = valid_calls / total_days if total_days > 0 else 0
+
+            avg_connected_calls_per_agent = connected_calls / total_agents if total_agents > 0 else 0
+
+            # Calculate Avg Calls per Day by Agent, Avg Connected Calls per Day by Agent, and Avg Valid Calls per Day by Agent
+            calls_per_day_by_agent = filtered_df.groupby([filtered_df['sync_date'].dt.date, 'agentId']).size().reset_index(name='calls_per_day')
+            avg_calls_per_day_by_agent = calls_per_day_by_agent.groupby('agentId')['calls_per_day'].mean().mean() if not calls_per_day_by_agent.empty else 0
+            
+            connected_calls_per_day_by_agent = filtered_df[filtered_df["callRemark"] == "Connected"].groupby([filtered_df['sync_date'].dt.date, 'agentId']).size().reset_index(name='connected_calls_per_day')
+            avg_connected_calls_per_day_by_agent = connected_calls_per_day_by_agent.groupby('agentId')['connected_calls_per_day'].mean().mean() if not connected_calls_per_day_by_agent.empty else 0
+            
+            valid_calls_per_day_by_agent = filtered_df[filtered_df["final_rejection"] == True].groupby([filtered_df['sync_date'].dt.date, 'agentId']).size().reset_index(name='valid_calls_per_day')
+            avg_valid_calls_per_day_by_agent = valid_calls_per_day_by_agent.groupby('agentId')['valid_calls_per_day'].mean().mean() if not valid_calls_per_day_by_agent.empty else 0
+
+            avg_calls_made_by_agent = calls_per_day_by_agent.groupby('agentId')['calls_per_day'].mean().mean() if not calls_per_day_by_agent.empty else 0
+            avg_calls_connected_by_agent = connected_calls_per_day_by_agent.groupby('agentId')['connected_calls_per_day'].mean().mean() if not connected_calls_per_day_by_agent.empty else 0
+            avg_valid_samples_by_agent = valid_calls_per_day_by_agent.groupby('agentId')['valid_calls_per_day'].mean().mean() if not valid_calls_per_day_by_agent.empty else 0
+
+            # Format numbers in Indian number format, replacing invalid numbers with 0 or rounded value
+            def format_number(value):
+                try:
+                    return format_decimal(Decimal(str(value)), locale='en_IN')
+                except InvalidOperation:
+                    return "0"
+            total_days = format_number(total_days)
+            total_agents = format_number(total_agents)
+            total_calls_made = format_number(total_calls_made)
+            connected_calls = format_number(connected_calls)
+            valid_calls = format_number(valid_calls)
+            average_calls_per_agent = format_number(round(average_calls_per_agent))
+            average_valid_calls_per_agent = format_number(round(average_valid_calls_per_agent))
+            avg_agents_per_day = format_number(round(avg_agents_per_day))
+            avg_calls_per_day = format_number(round(avg_calls_per_day))
+            avg_connected_calls_per_day = format_number(round(avg_connected_calls_per_day))
+            avg_valid_calls_per_day = format_number(round(avg_valid_calls_per_day))
+            avg_connected_calls_per_agent = format_number(round(avg_connected_calls_per_agent))
+            avg_calls_per_day_by_agent = format_number(round(avg_calls_per_day_by_agent))
+            avg_connected_calls_per_day_by_agent = format_number(round(avg_connected_calls_per_day_by_agent))
+            avg_valid_calls_per_day_by_agent = format_number(round(avg_valid_calls_per_day_by_agent))
+            avg_calls_made_by_agent = format_number(round(avg_calls_made_by_agent))
+            avg_calls_connected_by_agent = format_number(round(avg_calls_connected_by_agent))
+            avg_valid_samples_by_agent = format_number(round(avg_valid_samples_by_agent))
+
+            # Display metrics in styled cards with a modern color palette
+            st.write("### Performance Metrics")
+
+            # Helper function to render a card
+            def render_card(label, value, icon, color):
+                st.markdown(f"""
+                    <div style="background-color:{color}; color:white; padding:20px; border-radius:12px; display:flex; align-items:center; margin-bottom:20px;">
+                        <div style="font-size:24px; margin-right:10px;">{icon}</div>
+                        <div>
+                            <div style="font-size:18px; font-weight:bold;">{label}</div>
+                            <div style="font-size:24px; font-weight:bold;">{value}</div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+            # Create a row of cards, with more spacing between them
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                render_card("Total Duration (Days)", total_days, "📅", "#D8C4B6")
+                render_card("Unique Agents Involved", total_agents, "📊", "#9F8383")
+                render_card("Average Agents per Day", avg_agents_per_day, "👥", "#D8C4B6")
+
+            with col2:
+                render_card("Total Calls Made", total_calls_made, "📞", "#9F8383")
+                render_card("Average Calls per Day", avg_calls_per_day,"📞", "#D8C4B6")
+                render_card("Avg. Calls per Day per Agent", avg_calls_per_day_by_agent, "📈", "#9F8383")
+
+            with col3:
+                render_card("Total Calls Connected", connected_calls, "🔗", "#D8C4B6")
+                render_card("Avg. Connected Calls per Day", avg_connected_calls_per_day, "📈", "#9F8383")
+                render_card("Avg. Connected Calls per Day per Agent", avg_connected_calls_per_day_by_agent, "🔗", "#D8C4B6")
+
+            with col4:
+                render_card("Total Valid Calls", valid_calls, "✅", "#9F8383")
+                render_card("Avg. Valid Calls per Day", avg_valid_calls_per_day, "📈", "#D8C4B6")
+                render_card("Avg. Valid Calls per Day per Agent", avg_valid_calls_per_day_by_agent, "✅", "#9F8383")
+
                 # Custom CSS for borders, styling, and uniform box dimensions, with space between columns 
-            st.markdown("""
+                st.markdown("""
                 <style>
                 .metric-column {
                     border: 2px solid #3E5879; /* Darker border color */
@@ -154,48 +247,6 @@ if authenticate_user():
                 }
                 </style>
             """, unsafe_allow_html=True)
-            col1, col2, col3, col4, col5 = st.columns([6,6,6,6,6],gap='small')
-
-    # Wrapper div to space the columns apart
-            with col1:
-                st.markdown(f"""
-                <div class="metric-column">
-                    <div class="metric-label">Total Agents</div>
-                    <div class="metric-value">{total_agents}</div>
-                </div>
-            """, unsafe_allow_html=True)
-        
-            with col2:
-                st.markdown(f"""
-                <div class="metric-column">
-                    <div class="metric-label">Total Calls Made</div>
-                    <div class="metric-value">{total_calls_made}</div>
-                </div>
-            """, unsafe_allow_html=True)
-            with col3:
-                st.markdown(f"""
-                <div class="metric-column">
-                    <div class="metric-label">Connected Calls</div>
-                    <div class="metric-value">{connected_calls}</div>
-                </div>
-            """, unsafe_allow_html=True)
-        
-            with col4:
-                st.markdown(f"""
-                <div class="metric-column">
-                    <div class="metric-label">Valid Calls</div>
-                    <div class="metric-value">{valid_calls}</div>
-                </div>
-            """, unsafe_allow_html=True)
-        
-            with col5:
-                st.markdown(f"""
-                <div class="metric-column">
-                    <div class="metric-label">Avg Calls</div>
-                    <div class="metric-value">{round(average_calls_per_agent)}</div>
-                </div>
-            """, unsafe_allow_html=True)
-
                 
                 # Pivot the data
             pivot_df = (
@@ -287,7 +338,7 @@ if authenticate_user():
             mime="text/csv",
             )
         with tab2:
-            mapping_df=pd.read_excel(r"C:\Users\prem2\Downloads\CT AC PC Mapping.xlsx")
+            mapping_df=pd.read_excel(r"CT AC PC Mapping.xlsx")
             new_df = pd.merge(df, mapping_df, on="ac_no", how="left")
             AC_wise = (
                 new_df.groupby(['ac_no','AC_Name']).agg(
