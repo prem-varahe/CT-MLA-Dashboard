@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime
-from babel.numbers import format_decimal
-from decimal import Decimal, InvalidOperation
-from streamlit_option_menu import option_menu
 import os
 from dotenv import load_dotenv
 st.set_page_config(layout="wide",initial_sidebar_state='collapsed')
