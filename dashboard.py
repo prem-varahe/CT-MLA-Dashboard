@@ -18,6 +18,7 @@ def load_data():
     return df
 
 df = load_data()
+df=df.head(5000)
 def creds_enter():
     if st.session_state['user'].strip()=='admin' and st.session_state['passwd'].strip()=='admin':
         st.session_state['authenticated']=True
