@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from datetime import datetime
 import plotly.graph_objects as go
-
+st.set_page_config(layout="wide",initial_sidebar_state='collapsed')
 
 # Load your dataset
 @st.cache_data
@@ -13,6 +14,7 @@ def load_data():
     host_info = mongo_client['HOST']
     print ("\nhost:", host_info)
     df = pd.DataFrame(mongo_client['cati_central']['CT_MLA_feedback_raw_response'].find({'callRemark': {'$exists': True},'sync_date':{'$ne':"NaT"}}))
+    df['sync_date'] = pd.to_datetime(df['sync_date'])
     return df
 
 df = load_data()
@@ -86,14 +88,16 @@ if authenticate_user():
         )
     # Title
     with tab1:
-        st.markdown("<h1 style='text-align: center; color: #4CAF50;'>Calls & Agent Monitoring Dashboard</h1>", unsafe_allow_html=True)
         # Sidebar for filters with enhanced styling
-        st.write("### Select Dates:")
-        selected_dates = st.multiselect(
-        "Choose Dates:",
-        options=df["sync_date"].unique(),
-        help="Filter the data based on selected dates")
-        filtered_df = df[df['sync_date'].isin(selected_dates)]
+        st.markdown("<h2 style='text-align: center;'>Select Start & End Date: </h2>", unsafe_allow_html=True)
+        col1, col2 = st.columns([4, 4])  # Two equal columns
+            # PC Name selection in the first column
+        with col1:
+                start_date = st.date_input("Start Date", value=df['sync_date'].min())
+        with col2:
+                end_date = st.date_input("End Date", value=datetime.today())
+    
+        filtered_df = df[(df['sync_date'] >= pd.to_datetime(start_date)) & (df['sync_date'] <= pd.to_datetime(end_date))]
         # Metrics calculation
         total_agents = filtered_df["agentId"].nunique()
         total_calls_made = filtered_df["callRemark"].notnull().sum()
@@ -232,7 +236,7 @@ if authenticate_user():
 
         st.markdown("<h2 style='text-align: center;'>Date-Wise Call Monitoring</h2>", unsafe_allow_html=True)
         st.markdown(f'<div class="dataframe">{pivot_df.to_html(index=False)}</div>',unsafe_allow_html=True)
-
+        st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         # Download options
         csv1 = pivot_df.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -265,7 +269,7 @@ if authenticate_user():
         with st.container():
             st.markdown("<h2 style='text-align: center;'>Agent-Wise Call Monitoring</h2>", unsafe_allow_html=True)
             st.markdown(f'<div class="dataframe">{pivot_df2.to_html(index=False)}</div>',unsafe_allow_html=True)
-
+            st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         # Download options
         csv2 = pivot_df2.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -275,7 +279,6 @@ if authenticate_user():
         mime="text/csv",
         )
     with tab2:
-        st.markdown("<h1 style='text-align: center; color: #4CAF50;'>AC-Wise Calls Monitoring</h1>", unsafe_allow_html=True)
         mapping_df=pd.read_excel(r"CT AC PC Mapping.xlsx")
         new_df = pd.merge(df, mapping_df, on="ac_no", how="left")
         AC_wise = (
@@ -298,7 +301,7 @@ if authenticate_user():
             inplace=True
             )
         st.markdown(f'<div class="dataframe">{AC_wise.to_html(index=False)}</div>',unsafe_allow_html=True)
-
+        st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         # Download options
         ac_csv = AC_wise.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -308,7 +311,6 @@ if authenticate_user():
         mime="text/csv",
         )
     with tab3:
-        st.markdown("<h1 style='text-align: center; color: #4CAF50;'>Performance Matrics & Insights for MLAs</h1>", unsafe_allow_html=True)
         col1, col2 = st.columns([4, 4])  # Two equal columns
 
         # PC Name selection in the first column
@@ -383,47 +385,47 @@ if authenticate_user():
             </style>
         """, unsafe_allow_html=True)
         st.markdown("""
-        <style>
-        .dataframe {
-            border: 2px solid #4CAF50; /* Green border around the table */
-            border-radius: 8px; /* Rounded corners */
-            max-width: 100%;;
-            overflow-x: auto;
-            overflow-y: auto;
-            background-color: #f9f9f9; /* Light grey background for table */
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            margin: 10px 0;
-        }
-        
-        .dataframe th {
-            background-color: #4CAF50; /* Green header background */
-            color: white; /* White text for headers */
-            font-size: 16px;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        .dataframe td {
-            text-align: center; /* Center-align cell text */
-            padding: 10px;
-            font-size: 18px;
-            color: #555555; /* Dark grey text for rows */
-        }
-        
-        .dataframe tr:nth-child(even) {
-            background-color: #f1f1f1; /* Light grey for even rows */
-        }
-        
-        .dataframe tr:nth-child(odd) {
-            background-color: #ffffff; /* White for odd rows */
-        }
-        
-        .dataframe tr:hover {
-            background-color: #f0f8ff; /* Light blue hover effect */
-        }
-        </style>
-    """, unsafe_allow_html=True)
+            <style>
+            .dataframe {
+                border: 2px solid #3E5879; /* Dark border around the table */
+                border-radius: 8px; /* Rounded corners */
+                max-width: 100%;
+                overflow-x: auto;
+                overflow-y: auto;
+                background-color: #D8C4B6; /* Light beige background for table */
+                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+                margin: 10px 0;
+            }
+            
+            .dataframe th {
+                background-color: #3E5879; /* Dark header background */
+                color: white; /* White text for headers */
+                font-size: 16px;
+                padding: 10px;
+                text-align: center;
+                font-weight: bold;
+            }
+            
+            .dataframe td {
+                text-align: center; /* Center-align cell text */
+                padding: 10px;
+                font-size: 18px;
+                color: #3E5879; /* Dark text for rows */
+            }
+            
+            .dataframe tr:nth-child(even) {
+                background-color: #f2e9e4; /* Slightly lighter beige for even rows */
+            }
+            
+            .dataframe tr:nth-child(odd) {
+                background-color: #D8C4B6; /* Light beige for odd rows */
+            }
+            
+            .dataframe tr:hover {
+                background-color: #C4B8A6; /* Slightly darker beige hover effect */
+            }
+            </style>
+        """, unsafe_allow_html=True)
         # Create a container with space between the columns
         col1, col2, col3= st.columns([6,6,6],gap='small')
 
@@ -469,7 +471,7 @@ if authenticate_user():
             R_df = R_df.sort_values(by='Sample', ascending=False).reset_index(drop=True)
         st.markdown("<h2 style='text-align: center;'>Re-Electing MLAs</h2>", unsafe_allow_html=True)
         st.markdown(f'<div class="dataframe">{R_df.to_html(index=False)}</div>', unsafe_allow_html=True)
-
+        st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         # Download options
         R_csv = R_df.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -496,6 +498,7 @@ if authenticate_user():
                 )
         st.markdown("<h2 style='text-align: center;'>Frquency Visits MLAs vs Re-Elect MLAs</h2>", unsafe_allow_html=True)
         st.markdown(f'<div class="dataframe">{F_df_percentage.to_html(index=True)}</div>',unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         F_csv = F_df_percentage.to_csv(index=False).encode("utf-8")
         st.download_button(
         label="Download Visits MLAs vs Re-Elect MLAs",
@@ -522,6 +525,7 @@ if authenticate_user():
                 )
         st.markdown("<h2 style='text-align: center;'>Development Rating MLAs vs Re-Elect MLAs</h2>", unsafe_allow_html=True)
         st.markdown(f'<div class="dataframe">{D_df_percentage.to_html(index=True)}</div>',unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         D_csv = D_df_percentage.to_csv(index=False).encode("utf-8")
         st.download_button(
         label="Download Rating MLAs vs Re-Elect MLAs",
@@ -549,6 +553,7 @@ if authenticate_user():
                 )
         st.markdown("<h2 style='text-align: center;'>Accessibility of MLAs vs Re-Elect MLAs</h2>", unsafe_allow_html=True)
         st.markdown(f'<div class="dataframe">{A_df_percentage.to_html(index=True)}</div>',unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         A_csv = A_df_percentage.to_csv(index=False).encode("utf-8")
         st.download_button(
         label="Download Accessibility MLAs vs Re-Elect MLAs",
@@ -571,6 +576,7 @@ if authenticate_user():
         party_df_percentage = party_df_percentage.round(2).astype(str) + '%'
         st.markdown("<h2 style='text-align: center;'>Past AE Preference vs Re-Elect MLAs</h2>", unsafe_allow_html=True)
         st.markdown(f'<div class="dataframe">{party_df_percentage.to_html(index=True)}</div>',unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         p_csv = party_df_percentage.to_csv(index=False).encode("utf-8")
         st.download_button(
         label="Download Past AE Pref vs Re-Elect MLAs",
@@ -590,6 +596,7 @@ if authenticate_user():
         p_df = p_df.sort_values(by='uid_count', ascending=False).reset_index(drop=True)
         st.markdown("<h2 style='text-align: center;'>Past AE Preference</h2>", unsafe_allow_html=True)
         st.markdown(f'<div class="dataframe">{p_df.to_html(index=False)}</div>',unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         p2_csv = p_df.to_csv(index=False).encode("utf-8")
         st.download_button(
         label="Past AE Preference",
@@ -598,7 +605,6 @@ if authenticate_user():
         mime="text/csv",
         )
     with tab4:
-        st.markdown("<h1 style='text-align: center; color: #4CAF50;'>State Executive Summary Report</h1>", unsafe_allow_html=True)
         Overall_df = (
             new_df.groupby(['PC_Name','district','ac_no','AC_Name']).agg(
             Valid_Counts=('final_rejection', lambda x: (x == True).sum())  # Count where final rejection is True
@@ -688,6 +694,16 @@ if authenticate_user():
         merged_df['Overall Rating']=merged_df['Development Rating']+merged_df['Frequency Rating']+merged_df['Accessibility Rating']
         merged_df['Overall Rating %']=(merged_df['Development Rating %'].str.rstrip('%').astype(float)+merged_df['Frequency Rating %'].str.rstrip('%').astype(float)+merged_df['Accessibility Rating %'].str.rstrip('%').astype(float))/3
         merged_df = merged_df.sort_values(by='ac_no', ascending=True).reset_index(drop=True)
+        merged_df = merged_df.rename(columns={
+            "PC_Name":"PC Name",
+            "district":"District",
+            "ac_no":"AC No",
+            "AC_Name":"AC Name",
+            "Valid_Counts":"Valid Sample",
+            "Yes": "Re-Elect MLA (Yes)",
+            "No": "Re-Elect MLA (No)",
+            "Have not decided": "Re-Elect MLA (HND)"
+            })
     # Add a new column for performance category
         def categorize(row):
             if row['Overall Rating %'] < 50:
