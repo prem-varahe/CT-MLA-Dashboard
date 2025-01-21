@@ -5,8 +5,3 @@ numpy
 python-dateutil
 pymongo
 openpyxl
-babel
-python-dotenv
-streamlit-option-menu
-click
-tomli
