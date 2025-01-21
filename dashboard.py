@@ -10,7 +10,7 @@ st.set_page_config(layout="wide",initial_sidebar_state='collapsed')
 def load_data():
     # Replace this with your actual data loading code
     from pymongo import MongoClient
-    mongo_client = MongoClient("mongodb+srv://prem_prakash_kamakhya:19USyy4gnAIOuT2G@cati.hoamu.mongodb.net/")
+    mongo_client = MongoClient("")
     host_info = mongo_client['HOST']
     print ("\nhost:", host_info)
     df = pd.DataFrame(mongo_client['cati_central']['CT_MLA_feedback_raw_response'].find({'callRemark': {'$exists': True},'sync_date':{'$ne':"NaT"}}))
@@ -18,7 +18,6 @@ def load_data():
     return df
 
 df = load_data()
-df=df.head(5000)
 def creds_enter():
     if st.session_state['user'].strip()=='admin' and st.session_state['passwd'].strip()=='admin':
         st.session_state['authenticated']=True
