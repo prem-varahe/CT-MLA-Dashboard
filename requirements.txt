@@ -6,3 +6,4 @@ python-dateutil
 pymongo
 openpyxl
 babel
+streamlit_option_menu
