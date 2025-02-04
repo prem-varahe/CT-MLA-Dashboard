@@ -22,7 +22,7 @@ def load_data():
     mongo_client = MongoClient(mongo_uri)
     host_info = mongo_client['HOST']
     print ("\nhost:", host_info)
-    df = pd.DataFrame(mongo_client['cati_central']['CT_MLA_feedback_raw_response'].find({'callRemark': {'$exists': True},'sync_date':{'$ne':"NaT"}}))
+    df = pd.DataFrame(mongo_client['cati_central']['HP_MLA_feedback_raw_response'].find({'callRemark': {'$exists': True},'sync_date':{'$ne':"NaT"}}))
     df['sync_date'] = pd.to_datetime(df['sync_date'])
     return df
 df = load_data()
@@ -100,10 +100,19 @@ if authenticate_user():
             col1, col2 = st.columns([4, 4])  # Two equal columns
             # PC Name selection in the first column
             with col1:
-                start_date = st.date_input("Start Date", value=df['sync_date'].min())
+                start_date = st.date_input(
+                "Start Date", 
+                value=df['sync_date'].min(), 
+                min_value=df['sync_date'].min(), 
+                max_value=df['sync_date'].max()
+                )
             with col2:
-                end_date = st.date_input("End Date", value=datetime.today())
-    
+                end_date = st.date_input(
+                "End Date", 
+                value=df['sync_date'].max(), 
+                min_value=df['sync_date'].min(), 
+                max_value=df['sync_date'].max()
+                )
             filtered_df = df[(df['sync_date'] >= pd.to_datetime(start_date)) & (df['sync_date'] <= pd.to_datetime(end_date))]
 
             # Filter the DataFrame based on the selected start and end dates
@@ -338,7 +347,7 @@ if authenticate_user():
             mime="text/csv",
             )
         with tab2:
-            mapping_df=pd.read_excel(r"C:\Users\prem2\Downloads\CT AC PC Mapping.xlsx")
+            mapping_df=pd.read_excel(r"C:\Users\prem2\Downloads\HP AC PC Mapping.xlsx")
             new_df = pd.merge(df, mapping_df, on="ac_no", how="left")
             AC_wise = (
                 new_df.groupby(['ac_no','AC_Name']).agg(
@@ -956,7 +965,7 @@ if authenticate_user():
             marker=dict(colors=colors1),
             textinfo='label+percent',
             insidetextorientation='radial',
-            domain=dict(x=[0, 0.45], y=[0.55, 1])  # Place on the top left
+            domain=dict(x=[0, 0.28], y=[0, 1])  # Place on the top left
             ))
             fig.add_trace(go.Pie(
             labels=labels2,
@@ -965,7 +974,7 @@ if authenticate_user():
             marker=dict(colors=colors2),
             textinfo='label+percent',
             insidetextorientation='radial',
-            domain=dict(x=[0.55, 1], y=[0.55, 1])  
+            domain=dict(x=[0.36, 0.64], y=[0, 1])  
             ))
             fig.add_trace(go.Pie(
             labels=labels3,
@@ -974,31 +983,21 @@ if authenticate_user():
             marker=dict(colors=colors2),
             textinfo='label+percent',
             insidetextorientation='radial',
-            domain=dict(x=[0.25, 0.75], y=[0, 0.4])  
+            domain=dict(x=[0.72, 1], y=[0, 1])  
             ))
             # Update layout for title and formatting
             fig.update_layout(
             title_text="MLA Performance Rating",
             title_x=0.5,  # Center the title
             margin=dict(t=50, b=50, l=50, r=50),  # Adjust margins
-            height=700,  # Chart height
+            height=300,  # Chart height
             showlegend=False,
-            width=900   # Chart width
+            width=700   # Chart width
             )
 
             # Render the chart in Streamlit
             st.plotly_chart(fig, use_container_width=False)
             fig2 = go.Figure()
-            # line_df=(
-            #     pivot_df.groupby('sync_date')
-            #     .agg(
-            #     unique_agentid_count=('agentId', pd.Series.nunique),
-            #     call_made=('callRemark', lambda x: x.notnull().sum()),
-            #     sample=('callRemark', lambda x: (x == 'Connected').sum()),
-            #     valid=('final_rejection', lambda x: (x == 'True').sum())
-            #     )
-            #     .reset_index()
-            #     )
             pivot_df['Avg_Calls']=pivot_df['No of Calls Made']/pivot_df['No of Agents']
             fig2.add_trace(go.Scatter(
             x=pivot_df['Date'],
