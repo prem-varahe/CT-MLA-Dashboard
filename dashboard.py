@@ -347,7 +347,7 @@ if authenticate_user():
             mime="text/csv",
             )
         with tab2:
-            mapping_df=pd.read_excel(r"C:\Users\prem2\Downloads\HP AC PC Mapping.xlsx")
+            mapping_df=pd.read_excel(r"HP AC PC Mapping.xlsx")
             new_df = pd.merge(df, mapping_df, on="ac_no", how="left")
             AC_wise = (
                 new_df.groupby(['ac_no','AC_Name']).agg(
