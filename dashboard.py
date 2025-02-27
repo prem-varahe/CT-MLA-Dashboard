@@ -23,6 +23,7 @@ def load_data():
     host_info = mongo_client['HOST']
     print ("\nhost:", host_info)
     df = pd.DataFrame(mongo_client['cati_central']['HP_MLA_feedback_raw_response'].find({'callRemark': {'$exists': True},'sync_date':{'$ne':"NaT"}}))
+    df=df.head(50000)
     df['sync_date'] = pd.to_datetime(df['sync_date'])
     return df
 df = load_data()
