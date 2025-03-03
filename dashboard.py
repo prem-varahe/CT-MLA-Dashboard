@@ -13,7 +13,7 @@ st.set_page_config(layout="wide",initial_sidebar_state='collapsed')
 load_dotenv()
 
 # Get the MongoDB URI
-mongo_uri = os.getenv("MONGO_URL")
+mongo_uri = os.getenv(MONGO_URL)
 # Load your dataset
 @st.cache_data
 def load_data():
