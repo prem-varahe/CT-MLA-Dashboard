@@ -13,13 +13,14 @@ st.set_page_config(layout="wide",initial_sidebar_state='collapsed')
 load_dotenv()
 
 # Get the MongoDB URI
-mongo_uri = os.getenv("MONGO_URL")
+mongo_user = os.getenv("user_name")
+mongo_pass = os.getenv("passwd")
 # Load your dataset
 @st.cache_data
 def load_data():
     # Replace this with your actual data loading code
     from pymongo import MongoClient
-    mongo_client = MongoClient("mongodb+srv://{user_name}:{passwd}@cati.hoamu.mongodb.net/")
+    mongo_client = MongoClient("mongodb+srv://{mongo_user}:{mongo_pass}@cati.hoamu.mongodb.net/")
     host_info = mongo_client['HOST']
     print ("\nhost:", host_info)
     df = pd.DataFrame(mongo_client['cati_central']['HP_MLA_feedback_raw_response'].find({'callRemark': {'$exists': True},'sync_date':{'$ne':"NaT"}}))
